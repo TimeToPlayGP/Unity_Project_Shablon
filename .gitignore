@@ -1,3 +1,16 @@
+[Cc]Sharp60Support/
+[Aa]utoSave/
+[Cc]Sharp vNext Support/
+[Gg]oogleMobileAds/
+[Gg]ooglePlayGames/
+[Ll]eanLocalization/
+[Ll]eanTween/
+[Pp]articl System Download/
+[Pp]layServicesResolver/
+[Pp]lugins/
+[Rr]esourse/
+[Ss]impleParticlePack/
+[Ss]tandard Assets/
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -27,6 +40,7 @@ ExportedObj/
 # Unity3D generated meta files
 *.pidb.meta
 *.pdb.meta
+*.meta
 
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
