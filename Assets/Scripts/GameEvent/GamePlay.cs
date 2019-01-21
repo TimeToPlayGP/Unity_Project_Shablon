@@ -1,28 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System;
 
-public delegate void HandlerArgs();                             //вызов методов - показ панелей
-public delegate void HandlerArgsStars(int Stars);               //выйгрыш со звездами
-public delegate void HandlerArgsRecord(string R1, string R2);   //выйгрыш с рекордом
-
-enum WinType
+/// <summary>
+/// Как показывать панель, с анимацией или без
+/// </summary>
+public enum ShowPanelType
 {
-    Win,                    //Показать без LeanTween
-    WinStars,               //Показать с звездами
-    WinRecord,              //Показать с рекордом
-    Loose,                  //Показать с LeanTween
-    Pause                   //Показать без LeanTween
+    LeanTween,
+    None
 }
 
-public class GamePlay : MonoBehaviour
+public sealed class GamePlay : MonoBehaviour
 {
     [Header("Панель выйгрыша")]
     public GameObject WinPanel;
     public GameObject Stars;                //Звезды
-    public GameObject BestScore;            //Лучший рекорд
-    public GameObject LastTry;              //Текущий рекорд
-    public Sprite StarOn;                   //Спрайт звезд, которые активны
+    public Text BestScore;                  //Лучший рекорд
+    public Text CurrentRecord;              //Текущий рекорд
+    public Sprite StarOn;                   //Спрайт звезд, для активных звезд
 
     [Header("Панель проигрыша")]
     public GameObject LoosePanel;
@@ -30,146 +27,178 @@ public class GamePlay : MonoBehaviour
     [Header("Панель паузы")]
     public GameObject PausePanel;
 
-    private int CountStartsWin = -1;             //Кол-во звезд при выйгрыше
+    [Header("Настройки показа")]
+    [Header("Показ панели с анимацией или без:")]
+    public ShowPanelType showPanelType = ShowPanelType.LeanTween;
 
-    //Показать панель выйгрыша без параметров
-    private static event HandlerArgs OnShowPanelWin;
+    public delegate void MyEventHandler<GamePlayEventArgs>(GamePlayEventArgs e);
+
+    //Кол-во звезд при выйгрыше, если=0, то метод с показом звезд не вызывается
+    private int countStars { get; set; }
+
+    //Показать панель выйгрыша
+    private static event MyEventHandler<GamePlayEventArgs> ShowPanelWin;
     //Показать панель проигрыша
-    private static event HandlerArgs OnShowPanelLoose;
+    private static event MyEventHandler<GamePlayEventArgs> ShowPanelLoose;
     //Показать панель паузы
-    private static event HandlerArgs OnShowPanelPause;
-    //Показать панель выйгрыша со звездами
-    private static event HandlerArgsStars OnShowPanelWinStars;
-    //Показать панель с рекордом
-    private static event HandlerArgsRecord OnShowPanelWinRecord;
+    private static event MyEventHandler<GamePlayEventArgs> ShowPanelPause;
 
     void Start()
     {
-        OnShowPanelWin += ShowWinPanel;
-        OnShowPanelLoose += ShowLoosePanel;
-        OnShowPanelPause += ShowPausePanel;
-        OnShowPanelWinStars += ShowWinPanel;
-        OnShowPanelWinRecord += ShowWinPanel;
+        if (ShowPanelWin == null)
+            ShowPanelWin = ShowWinPanel;
+        if (ShowPanelLoose == null)
+            ShowPanelLoose = ShowLoosePanel;
+        if (ShowPanelPause == null)
+            ShowPanelPause = ShowPausePanel;
     }
 
-    //Срабатывание события без параметров
-    public static void CallHandler(HandlerArgs handler) => handler();
-    //Срабатывание события с параметром (int)
-    public static void CallHandler(HandlerArgsStars handler, int a) => handler(a);
-    //Срабатывание события с параметрами (string, string)
-    public static void CallHandler(HandlerArgsRecord handler, string R1, string R2) => handler(R1, R2);
+    //Вызов события без показа рекорда и звезд
+    public static void OnShowWin() => ShowPanelWin?.Invoke(new GamePlayEventArgs());
 
-    //Вызов события
-    public static void OnShowWin() => CallHandler(OnShowPanelWin);
-    //Вызов события
-    public static void OnShowWin(int Stars) => CallHandler(OnShowPanelWinStars, Stars);
-    //Вызов события
-    public static void OnShowWin(string R1, string R2) => CallHandler(OnShowPanelWinRecord, R1, R2);
-    //Вызов события
-    public static void OnShowLoose() => CallHandler(OnShowPanelLoose);
-    //Вызов события
-    public static void OnShowPause() => CallHandler(OnShowPanelPause);
+    //Вызов события с показом звезд
+    public static void OnShowWin(int stars) => ShowPanelWin?.Invoke(new GamePlayEventArgs(stars));
 
-    //Вызов метода по событию
-    private void ShowWinPanel()
+    //Вызов события с показом рекорда
+    public static void OnShowWin(string _bestRecord, string _currentRecord) =>
+        ShowPanelWin?.Invoke(new GamePlayEventArgs(_bestRecord, _currentRecord));
+
+    //Вызов события с показом рекорда и звезд
+    public static void OnShowWin(int stars, string _bestRecord, string _currentRecord) =>
+        ShowPanelWin?.Invoke(new GamePlayEventArgs(stars,_bestRecord, _currentRecord));
+
+    //Вызов события показа панели проигрыша
+    public static void OnShowLoose() => ShowPanelLoose?.Invoke(new GamePlayEventArgs());
+
+    //Вызов события показа панели паузы
+    public static void OnShowPause() => ShowPanelPause?.Invoke(new GamePlayEventArgs());
+
+    /// <summary>
+    /// Метод выполняет присваивание переменных для выйгрыша, которые передаем с GamePlayEventArgs,
+    /// и активацию панели выйгрыша
+    /// </summary>
+    /// <param name="e">Параметры, необходимые при показе выйгрыша</param>
+    private void ShowWinPanel(GamePlayEventArgs e)
     {
-        SetDisEnableObject(Stars, BestScore, LastTry);
-        ShowPanelObject(WinPanel, WinType.Win);
-    }
-    //Вызов метода по событию
-    private void ShowWinPanel(int CountStars)
-    {
-        SetDisEnableObject(BestScore, LastTry);
-        CountStartsWin = CountStars;
-        ShowPanelObject(WinPanel, WinType.WinStars);
-    }
-    //Вызов метода по событию
-    private void ShowWinPanel(string R1, string R2)
-    {
-        SetDisEnableObject(Stars);
-        BestScore.GetComponent<Text>().text = "Best Score: " + R1;
-        LastTry.GetComponent<Text>().text = "Last try: " + R2;
-        ShowPanelObject(WinPanel, WinType.WinRecord);
-    }
-    //Вызов метода по событию
-    private void ShowLoosePanel()
-    {
-        ShowPanelObject(LoosePanel, WinType.Loose);
-    }
-    //Вызов метода по событию
-    private void ShowPausePanel()
-    {
-        ShowPanelObject(PausePanel, WinType.Loose);
+        SetDisEnableObject(e);
+
+        ShowPanelObject(WinPanel, showPanelType);
     }
 
-    //Переопределяем метод, если выйгрыш со звездами, то показать анимацию звезд в конце
-    private void ShowPanelObject(GameObject panel, WinType type)
+    /// <summary>
+    /// Метод выполняет присваивание переменных для проигрыша, которые передаем с GamePlayEventArgs,
+    /// и активацию панели проигрыша
+    /// </summary>
+    /// <param name="e">Параметры, необходимые при показе проигрыша</param>
+    private void ShowLoosePanel(GamePlayEventArgs e)
+    {
+        //В данном случае необходимости в показе информации для панели проигрыша нет
+        //SetDisEnableObject(e);
+
+        ShowPanelObject(LoosePanel, showPanelType);
+    }
+
+    /// <summary>
+    /// Метод выполняет присваивание переменных для паузы, которые передаем с GamePlayEventArgs,
+    /// и активацию панели паузы
+    /// </summary>
+    /// <param name="e">Параметры, необходимые при показе паузы</param>
+    private void ShowPausePanel(GamePlayEventArgs e)
+    {
+        //В данном случае необходимости в показе информации для панели паузы нет
+        //SetDisEnableObject(e);
+
+        ShowPanelObject(PausePanel, showPanelType);
+    }
+
+    /// <summary>
+    /// Активирует панель либо с анимацией, либо без
+    /// </summary>
+    /// <param name="panel"></param>
+    /// <param name="type"></param>
+    private void ShowPanelObject(GameObject panel, ShowPanelType type)
     {
         switch (type)
         {
-            case WinType.Win:
-                WinPanel.transform.GetChild(0).gameObject.transform.localPosition = Vector3.zero;
-                break;
-            case WinType.WinStars:
-                LeanTweenObject(panel);
-                break;
-            case WinType.WinRecord:
-                goto case WinType.WinStars;
-                break;
-            case WinType.Loose:
-                goto case WinType.WinStars;
-                break;
-            case WinType.Pause:
-                break;
-            default:
-                break;
+            case ShowPanelType.LeanTween : LeanTweenObject(panel); break;
+            case ShowPanelType.None: panel.transform.localPosition = Vector3.zero;
+                if (countStars != 0)
+                    showStars(countStars); break;
         }
         panel.SetActive(true);
     }
 
-    private void LeanTweenObject(GameObject o)
+    /// <summary>
+    /// Метод для анимации панели leanObject
+    /// С типом анимации setEase
+    /// С игнорированием остановки времени в приложении setIgnoreTimeScale
+    /// При завершении анимации setOnComplete вызовом метода showStars
+    /// </summary>
+    /// <param name="leanObject">Панель анимации </param>
+    private void LeanTweenObject(GameObject leanObject)
     {
-            LeanTween.moveLocalY(o.transform.GetChild(0).gameObject, 0, 1)
+        leanObject.transform.localPosition = new Vector3(0, 500, 0);
+        LeanTween.moveLocalY(leanObject, 0, 1)
                 .setEase(LeanTweenType.easeOutBounce)
                 .setIgnoreTimeScale(true)
                 .setOnComplete(() =>
                 {
-                    if (CountStartsWin != -1)                  //Если метод с показом звезд
-                        showStars(CountStartsWin);             //Показать звезды
+                    if (countStars != 0)
+                        showStars(countStars);
                 });
     }
 
+    /// <summary>
+    /// Показать звезды с задержкой
+    /// </summary>
+    /// <param name="countStar">Кол-во звезд</param>
     private void showStars(int countStar)
     {
-        Time.timeScale = 1;
-        StartCoroutine(ShowStars(countStar));                  //Показать звезды
+        StartCoroutine(ShowStars(countStar));
     }
 
-    // Показать звезды
     int k = 0;
+    /// <summary>
+    /// Показать звезды с эффектом ParticleSystem
+    /// </summary>
+    /// <param name="countStar">Кол-во звезд</param>
+    /// <returns></returns>
     IEnumerator ShowStars(int countStar)
     {
         foreach (Transform child in Stars.transform)
         {
             if (countStar > k)
             {
+                //Запускать каждые 0.5f секунд
                 yield return new WaitForSeconds(0.5f);
+                //Звезда теперь активная
                 child.GetComponent<Image>().sprite = StarOn;
-                foreach (Transform item in child.transform)
-                {
-                    item.GetComponent<ParticleSystem>().Play();
-                }
+                //Выполнить эффект
+                child.GetChild(0).GetComponent<ParticleSystem>().Play();
                 k++;
             }
         }
     }
 
-    //Скрывает объекты
-    private void SetDisEnableObject(params GameObject[] gameObjects)
+    /// <summary>
+    /// Выставляем значение объектов для панелей
+    /// </summary>
+    /// <param name="e">Информация для панели</param>
+    private void SetDisEnableObject(GamePlayEventArgs e)
     {
-        for (int i = 0; i < gameObjects.Length; i++)
-        {
-            gameObjects[i]?.SetActive(false);
-        }
+        //Кол-во звезд
+        if (e.CountStars == null)
+            Stars.gameObject.SetActive(false);
+        else countStars = (int)e.CountStars;
+
+        //Лучший рекорд
+        if (e.BestRecord == null)
+            BestScore.gameObject.SetActive(false);
+        else BestScore.text = e.BestRecord;
+
+        //Текущий рекорд
+        if (e.CurrentRecord == null)
+            CurrentRecord.gameObject.SetActive(false);
+        else CurrentRecord.text = e.CurrentRecord;
     }
 }

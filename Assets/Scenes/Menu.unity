@@ -1921,7 +1921,6 @@ GameObject:
   - component: {fileID: 1324025809}
   - component: {fileID: 1324025808}
   - component: {fileID: 1324025807}
-  - component: {fileID: 1324025810}
   - component: {fileID: 1324025811}
   m_Layer: 5
   m_Name: Play
@@ -2022,22 +2021,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1324025805}
---- !u!114 &1324025810
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1324025805}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 241b5ba8d31a2da4d8fa7136c68a9c33, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  OptionAction: 3
-  VisibleObject: {fileID: 1987188785}
-  HideObject: {fileID: 0}
-  OpenScene: 2
-  playSound: 0
 --- !u!114 &1324025811
 MonoBehaviour:
   m_ObjectHideFlags: 0

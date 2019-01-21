@@ -1,86 +1,61 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.EventSystems;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Events;
+using UnityEngine.UI;
 
-public class ButtonClick : MonoBehaviour {
+public class ButtonClick : MonoBehaviour, IClick
+{
 
-    //public Select selest = Select.BeginMetod;
+    public OptionActionValue OptionAction;
 
-    [Header("Строка")]
-    public string ValueString;
+    public GameObject VisibleObject;
 
-    [Header("Объект")]
-    public GameObject ValueGameobject;
+    public GameObject HideObject;
 
-    [Header("Сцена")]
-    //public Scenes ValueScenes;
+    public SceneValue OpenScene = SceneValue.Game;
 
-    private Vector3 StartPositionScale;
-	// Use this for initialization
-	/*void Start ()
+    //Какую музыку воспрозвести для данной кнопки?
+    public PlaySoundButton playSound;
+
+    public void Start()
     {
-        StartPositionScale = transform.localScale;
-
-        EventTrigger trigger = gameObject.AddComponent<EventTrigger>();
-        EventTrigger.Entry entry = new EventTrigger.Entry();
-        entry.eventID = EventTriggerType.PointerClick;
-        entry.callback.AddListener((eventData) => { LeanTween.scale(this.gameObject, new Vector3(0.8f, 0.8f, 0.8f), 0.15f).setLoopPingPong(1).setIgnoreTimeScale(true).setOnComplete(Click); });
-        trigger.triggers.Add(entry);
+        gameObject.GetComponent<Button>().onClick.AddListener(PlaySound);
+        gameObject.GetComponent<Button>().onClick.AddListener(Click);
     }
 
-    void Click()
+    public virtual void Click()
     {
-        if (gameObject.transform.localScale.x != 1) gameObject.transform.localScale = Vector3.one;
-        GameObject.Find("Sounds").GetComponent<Sounds>().playSoundClick();
-        switch ((int)selest)
+        switch (OptionAction)
         {
-            case 0:
-                if (ValueString == "Next")
-                {
-                    BaseProfile.Instance.CurrentLevel++;
-                    if (BaseProfile.Instance.CurrentLevel > BaseProfile.CountLevelsInEachMod[BaseProfile.Instance.CurrentMode])
-                    {
-                        BaseProfile.Instance.CurrentMode++;
-                        BaseProfile.Instance.CurrentLevel = 1;
-                        if (BaseProfile.Instance.CurrentMode > BaseProfile.CountLevelsInEachMod.Length) { BaseProfile.Instance.CurrentMode = 1; Sound(); SceneManager.LoadScene(Scenes.Menu.ToString()); break; }
-                        else { Sound(); SceneManager.LoadScene(Scenes.Game.ToString()); break; }
-                    }
-                    Sound();
-                    SceneManager.LoadScene(Scenes.Game.ToString()); break;
-                }
-                //else if (ValueString == "NArrow") ptSliderMenuScri.nextLevel();
-                //else if (ValueString == "BArrow") ptSliderMenuScri.backLevel();
-                break;
-            case 1: ValueGameobject.SetActive(true); if (ValueGameobject.name == "Pause") Time.timeScale = 0; break;
-            case 2: ValueGameobject.SetActive(false); if (ValueGameobject.name == "Pause") Time.timeScale = 1; break;
-            case 3:
-                if (ValueScenes == Scenes.LevelGrid || ValueScenes == Scenes.LevelList)
-                {
-                    if (BaseProfile.Instance.FirstStart == 0)
-                    {
-                        BaseProfile.Instance.FirstStart = 1;
-                        Sound();
-                        SceneManager.LoadScene(Scenes.Game.ToString());
-                    }
-                    else
-                    {
-                        Sound();
-                        SceneManager.LoadScene(ValueScenes.ToString());
-                    }
-                }
-                else
-                {
-                    Sound();
-                    SceneManager.LoadScene(ValueScenes.ToString());
-                }
+            case OptionActionValue.BeginMethod:break;
+
+            case OptionActionValue.VisibleObject:
+                VisibleObject.SetActive(true); break;
+
+            case OptionActionValue.HideObject:
+                HideObject.SetActive(false); break;
+
+            case OptionActionValue.OpenScene:
+                SceneManager.LoadScene(OpenScene.ToString()); break;
+            default:
                 break;
         }
     }
 
-    void Sound()
+    public void PlaySound()
     {
-        GameObject.Find("Sounds").GetComponent<Sounds>().playSoundClick();
-    }*/
+        Debug.Log("Sound");
+        switch (playSound)
+        {
+            case PlaySoundButton.playSoundClickMenu:
+                break;
+            case PlaySoundButton.playSoundClickGame:
+                break;
+            default:
+                break;
+        }
+        //Изменить
+        //GameObject.Find("Sounds").GetComponent<Sounds>().playSoundClick();
+    }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// Кнопка, на выполнение действия и изменение своего размера(анимация)
 /// </summary>
-public class ButtonClickAndSize : BaseButton, IClick, ISize
+public class ButtonClickAndSize : ButtonClick, IClick, ISize
 {
     //Размер, до которого изменить объект
     public Vector3 Vector3to { get { return _vector3to; } set { _vector3to = value; } }

@@ -7,7 +7,7 @@ using UnityEditor;
 [CustomEditor(typeof(ButtonClickAndSize))]
 [CanEditMultipleObjects]
 
-public class ButtonClickAndSizeEditor : BaseButtonEditor
+public class ButtonClickAndSizeEditor : ButtonClickEditor
 { 
     protected override void OnEnable()
     {

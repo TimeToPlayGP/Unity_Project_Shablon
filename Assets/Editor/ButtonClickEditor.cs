@@ -2,13 +2,13 @@
 using UnityEngine;
 
 //Данный атрибутом паказывает какой компонент мы редактируем
-[CustomEditor(typeof(BaseButton))]
+[CustomEditor(typeof(ButtonClick))]
 [CanEditMultipleObjects]
 
-public class BaseButtonEditor : Editor
+public class ButtonClickEditor : Editor
 {
     //Наш класс
-    protected BaseButton subject;                     
+    protected ButtonClick subject;                     
 
     //Данные класса, которые необходимо изменять в Inspector
     protected SerializedProperty OptionAction;    //Выбор
@@ -19,7 +19,7 @@ public class BaseButtonEditor : Editor
     //Присваиваем this.переменным - переменные класса
     protected virtual void OnEnable()
     {
-        subject = target as BaseButton;
+        subject = target as ButtonClick;
 
         OptionAction = serializedObject.FindProperty("OptionAction");
 
